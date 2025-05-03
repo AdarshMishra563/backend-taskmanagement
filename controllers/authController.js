@@ -10,9 +10,22 @@ exports.register=async (req,res)=>{
     try{
       
         
-        let user=await User.findOne({email});
-        if(user) return res.status(400).json({message:" User already exists"});
-    
+        let user=await User.findOne({email}) ;
+        if(user){
+          if(!user.isVerified){
+            const del=await User.findOneAndDelete({email});
+            console.log(del);
+            
+          }else{
+            return res.status(400).json({message:" User already exists"});
+
+          }
+        }
+          
+          
+          
+       
+      
 const hashpass=await bcrypt.hash(password,10);
 
 const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -22,7 +35,7 @@ const newuser=new User({name,email,password:hashpass,otp: hashedOtp,
     otpExpires: Date.now() + 10 * 60 * 1000});
     
 await newuser.save();
-
+console.log(newuser)
 
 const payload={user:{id:newuser.id}};
 const token=jwt.sign(payload,process.env.JWT_SECRET,{expiresIn:"7d"});

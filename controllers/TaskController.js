@@ -19,16 +19,50 @@ exports.createTask = async (req, res) => {
   exports.getTasks = async (req, res) => {
     const { status, priority, dueDate, search } = req.query;
     let query = {};
+  console.log(req.query)
+    if (status) {
+      try {
+        const statusArray = JSON.parse(status); 
+        console.log(status,statusArray)
+        query.status = { $in: statusArray };  
+      } catch (err) {
+        return res.status(400).json({ message: "Invalid status format" });
+      }
+    }
   
-    if (status) query.status = status;
-    if (priority) query.priority = priority;
+    if (priority) {
+      try {
+        const priorityArray = JSON.parse(priority); 
+        query.priority = { $in: priorityArray };  
+      } catch (err) {
+        return res.status(400).json({ message: "Invalid priority format" });
+      }
+    }
+  
     if (dueDate) query.dueDate = { $lte: new Date(dueDate) };
-    if (search) query.title = { $regex: search, $options: 'i' };
-  
-    query.$or = [{ createdBy: req.user.id },{ assignedTo: req.user.id }];
-  
+    const userCondition = [
+      { createdBy: req.user.id },
+      { assignedTo: req.user.id }
+    ];
+    if (search) {
+      query.$and = [
+        { $or: userCondition },
+        {
+          $or: [
+            { title: { $regex: search, $options: 'i' } },
+            { description: { $regex: search, $options: 'i' } }
+          ]
+        }
+      ];
+    } else {
+      query.$or = userCondition;
+    }
+
+
+  console.log(query.search,query.priority)
     const tasks = await Task.find(query).populate('createdBy assignedTo');
-    res.json(tasks);
+    console.log(tasks)
+    res.json(query);
   };
   exports.updateTask = async (req, res) => {
     const { title, description, dueDate, priority, status, assignedTo } = req.body;

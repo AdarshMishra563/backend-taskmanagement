@@ -9,7 +9,7 @@ router.post("/login",login);
 router.post("/verifyOtp",verifyOtp);
 router.get("/getuser",getUserFromToken);
 
-router.post('/tasks', authmiddleware, taskController.createTask);
+router.post('/createtasks', authmiddleware, taskController.createTask);
 router.get('/tasks', authmiddleware, taskController.getTasks);
 
 router.put('/tasks/:id', authmiddleware, taskController.updateTask);

@@ -15,5 +15,5 @@ router.get('/tasks', authmiddleware, taskController.getTasks);
 
 router.put('/tasks/:id', authmiddleware, taskController.updateTask);
 router.delete('/tasks/:id', authmiddleware, taskController.deleteTask);
-
+router.get('/notification',authmiddleware,taskController.getNotifications)
 module.exports=router;

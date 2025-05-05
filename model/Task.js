@@ -5,7 +5,7 @@ const TaskSchema = new mongoose.Schema({
   dueDate: Date,
   priority: { type: String, enum: ['Low', 'Medium', 'High'] },
   status: { type: String, enum: ['To Do', 'In Progress', 'Done'] },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Taskmanagementusers' },
+  assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'Taskmanagementusers' },
 });
 module.exports = mongoose.model('Task', TaskSchema);

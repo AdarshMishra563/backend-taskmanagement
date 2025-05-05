@@ -113,4 +113,25 @@ exports.verifyOtp =async (req,res)=>{
         res.status(401).json({ message: 'Token is not valid' });
       }
     };
+    exports.getAllUsers = async (req, res) => {
+      try {
+        const query = req.query.user;
+    console.log(query)
+        if (!query || query.trim().length === 0) {
+          return res.json({ users: [] });
+        }
     
+        const users = await User.find({
+          isVerified: true,
+          $or: [
+            { name: { $regex: query, $options: 'i' } },
+            { email: { $regex: query, $options: 'i' } }
+          ]
+        });
+    console.log(users)
+        res.json({ users });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+      }
+    };

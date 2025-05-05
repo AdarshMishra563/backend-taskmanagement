@@ -1,5 +1,5 @@
 const express=require("express");
-const {register,login,verifyOtp,getUserFromToken,}=require("../controllers/authController");
+const {register,login,verifyOtp,getUserFromToken,getAllUsers}=require("../controllers/authController");
 const taskController=require('../controllers/TaskController')
 const authmiddleware = require("../middleware/authmiddleware");
 const router=express.Router();
@@ -8,6 +8,7 @@ router.post("/login",login);
 
 router.post("/verifyOtp",verifyOtp);
 router.get("/getuser",getUserFromToken);
+router.get("/getalluser",getAllUsers);
 
 router.post('/createtasks', authmiddleware, taskController.createTask);
 router.get('/tasks', authmiddleware, taskController.getTasks);

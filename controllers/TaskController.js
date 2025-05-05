@@ -1,9 +1,10 @@
 const Task=require('../model/Task');
 const Notification=require('../model/Notification');
+const User=require('../model/User')
 exports.createTask = async (req, res) => {
-    const { title, description, dueDate, priority, assignedTo } = req.body;
+    const { title, description, dueDate,status, priority, assignedTo } = req.body;
     try {
-      const task = new Task({ title, description, dueDate, priority, assignedTo, createdBy: req.user.id });
+      const task = new Task({ title, description,status, dueDate, priority, assignedTo, createdBy: req.user.id });
       await task.save();
   
       if (assignedTo) {
@@ -44,6 +45,7 @@ exports.createTask = async (req, res) => {
       { createdBy: req.user.id },
       { assignedTo: req.user.id }
     ];
+    
     if (search) {
       query.$and = [
         { $or: userCondition },
@@ -59,10 +61,10 @@ exports.createTask = async (req, res) => {
     }
 
 
-  console.log(query.search,query.priority)
+
     const tasks = await Task.find(query).populate('createdBy assignedTo');
     console.log(tasks)
-    res.json(query);
+    res.json(tasks);
   };
   exports.updateTask = async (req, res) => {
     const { title, description, dueDate, priority, status, assignedTo } = req.body;

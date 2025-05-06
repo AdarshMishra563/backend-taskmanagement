@@ -109,3 +109,22 @@ exports.createTask = async (req, res) => {
       res.status(500).json({ message: 'Failed to fetch notifications' });
     }
   };
+  exports.markAllNotificationsAsRead = async (req, res) => {
+    try {
+      const userId = req.user.id;
+      console.log("Marking notifications as read for user:", userId);
+  
+      const result = await Notification.updateMany(
+        { user: userId, isRead: false },  
+        { $set: { isRead: true } }       
+      );
+  
+      res.json({
+        message: 'All notifications marked as read',
+        updatedCount: result.modifiedCount
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Failed to update notifications' });
+    }
+  };

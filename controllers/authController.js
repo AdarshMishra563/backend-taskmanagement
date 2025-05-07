@@ -99,7 +99,7 @@ exports.verifyOtp =async (req,res)=>{
    
 
     exports.getUserFromToken =async (req, res) => {
-      const token = req.header('Authorization')?.split(' ')[1]; 
+      const token = req.header('Authorization');
     console.log(token)
       if (!token) {
         return res.status(401).json({ message: 'No token, authorization denied' });
@@ -123,6 +123,30 @@ exports.verifyOtp =async (req,res)=>{
         if (!query || query.trim().length === 0) {
           return res.json({ users: [] });
         }
+    
+        const users = await User.find({
+          isVerified: true,
+          $or: [
+            { name: { $regex: query, $options: 'i' } },
+            { email: { $regex: query, $options: 'i' } }
+          ]
+        });
+    console.log(users)
+        res.json({ users });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+      }
+    };
+    exports.AllUsers = async (req, res) => {
+      try {
+        const query = req.query.user;
+        console.log(query)
+            if (!query || query.trim().length === 0) {
+             const users= await User.find({isVerified:true});
+             return res.json({ users });
+            }
+        
     
         const users = await User.find({
           isVerified: true,

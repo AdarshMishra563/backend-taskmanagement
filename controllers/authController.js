@@ -14,7 +14,7 @@ exports.register=async (req,res)=>{
         if(user){
           if(!user.isVerified){
             const del=await User.findOneAndDelete({email});
-            console.log(del);
+           
             
           }else{
             return res.status(400).json({message:" User already exists"});
@@ -35,12 +35,13 @@ const newuser=new User({name,email,password:hashpass,otp: hashedOtp,
     otpExpires: Date.now() + 10 * 60 * 1000});
     
 await newuser.save();
-console.log(newuser)
 
+console.log(newuser)
 const payload={user:{id:newuser.id}};
+console.log(payload)
 const token=jwt.sign(payload,process.env.JWT_SECRET,{expiresIn:"7d"});
  await sendEmail(email, 'Your OTP Code', `Your verification code is: ${otp}`);
-res.json({token,message:"Otp sent to mail",isVerified:true});
+res.json({message:"Otp sent to mail",isVerified:true});
 
     }catch(err){res.status(500).json("Server error,user not registered")}
 }
@@ -85,8 +86,10 @@ exports.verifyOtp =async (req,res)=>{
         user.otpExpires = undefined;
     
         await user.save();
-    
-        res.status(200).json({ message: 'OTP verified successfully.' ,isVerified:true});
+        const payload={user:{id:user.id}};
+        console.log(payload)
+        const token=jwt.sign(payload,process.env.JWT_SECRET,{expiresIn:"7d"});
+        res.status(200).json({ token,message: 'OTP verified successfully.' ,isVerified:true});
     
       } catch (err) {
         console.error(err);

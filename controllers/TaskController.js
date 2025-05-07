@@ -20,7 +20,7 @@ exports.createTask = async (req, res) => {
   exports.getTasks = async (req, res) => {
     const { status, priority, dueDate, search } = req.query;
     let query = {};
-  console.log(req.query)
+  
     if (status) {
       try {
         const statusArray = JSON.parse(status); 
@@ -63,7 +63,7 @@ exports.createTask = async (req, res) => {
 
 
     const tasks = await Task.find(query).populate('createdBy assignedTo');
-    console.log(tasks)
+    
     res.json(tasks);
   };
   exports.updateTask = async (req, res) => {
@@ -88,6 +88,7 @@ exports.createTask = async (req, res) => {
   };
   exports.deleteTask = async (req, res) => {
     try {
+      console.log(req.params.id)
       const task = await Task.findByIdAndDelete(req.params.id);
       if (!task) return res.status(404).json({ message: 'Task not found' });
   

@@ -34,38 +34,40 @@ app.get("/api/users", async (req, res) => {
 let users = {}; // userId: socketId
 
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
-
-  socket.on("joinRoom", (userId) => {
-    users[userId] = socket.id;
-    socket.emit("yourID", socket.id);
-    io.emit("onlineUsers", Object.keys(users));
-  });
-
-  socket.on("callUser", ({ from, to, signal }) => {
-    const toSocketId = users[to];
-    if (toSocketId) {
-      io.to(toSocketId).emit("incomingCall", { from, signal });
-    }
-  });
-
-  socket.on("answerCall", ({ to, signal }) => {
-    const toSocketId = users[to];
-    if (toSocketId) {
-      io.to(toSocketId).emit("callAnswered", { signal });
-    }
-  });
-
-  socket.on("disconnect", () => {
-    for (let [userId, socketId] of Object.entries(users)) {
-      if (socketId === socket.id) {
-        delete users[userId];
-        break;
+    console.log("User connected:", socket.id);
+  
+    socket.on("joinRoom", (userId) => {
+      users[userId] = socket.id;
+      io.emit("onlineUsers", Object.keys(users));
+    });
+  
+    socket.on("callUser", (data) => {
+      const { from, to, signal } = data;
+      const toSocketId = users[to];
+      if (toSocketId) {
+        io.to(toSocketId).emit("incomingCall", { from, signal });
       }
-    }
-    io.emit("onlineUsers", Object.keys(users));
+    });
+  
+    socket.on("answerCall", (data) => {
+      const { to, signal } = data;
+      const toSocketId = users[to];
+      if (toSocketId) {
+        io.to(toSocketId).emit("callAnswered", { signal });
+      }
+    });
+  
+    socket.on("disconnect", () => {
+      for (let [userId, socketId] of Object.entries(users)) {
+        if (socketId === socket.id) {
+          delete users[userId];
+          break;
+        }
+      }
+      io.emit("onlineUsers", Object.keys(users));
+    });
   });
-});
+  
 
 
 server.listen(PORT,()=>console.log(`Server is running on ${PORT}`))  

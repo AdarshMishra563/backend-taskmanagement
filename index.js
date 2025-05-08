@@ -34,17 +34,19 @@ app.get("/api/users", async (req, res) => {
   const users = await User.find();
   res.json(users);
 });
+const online=[];
 let users = {}; // Keeps track of connected users by userId: socketId
-
+console.log(users)
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
   socket.on("joinRoom", (userId) => {
     users[userId] = socket.id;  // Add the user to the users object
     socket.emit("yourID", socket.id);  // Emit the user's socket id
-
+    console.log(users);
     // Emit the updated list of online users to all clients
-    io.emit("onlineUsers", Object.keys(users));  // Emit list of online user ids
+    io.emit("onlineUsers",  Object.keys(users));
+    console.log(users)  // Emit list of online user ids
   });
 
   socket.on("callUser", (data) => {
@@ -62,7 +64,7 @@ io.on("connection", (socket) => {
       io.to(toSocketId).emit("callAnswered", { signal });
     }
   });
-
+socket.on("onlineUsers",()=>{io.emit(users)})
   socket.on("disconnect", () => {
     // Find the user who disconnected and remove them from the users object
     for (let [userId, socketId] of Object.entries(users)) {
@@ -73,9 +75,9 @@ io.on("connection", (socket) => {
     }
 
     // Emit the updated list of online users after someone disconnects
-    io.emit("onlineUsers", Object.keys(users));
+    io.emit("onlineUsers",online.push(Object.keys(users)) );
   });
 });
 
 
-server.listen(PORT,()=>console.log(`Server is running on ${PORT}`))
+server.listen(PORT,()=>console.log(`Server is running on ${PORT}`))  

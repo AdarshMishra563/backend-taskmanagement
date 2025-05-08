@@ -39,7 +39,7 @@ await newuser.save();
 const payload={user:{id:newuser.id}};
 
 const token=jwt.sign(payload,process.env.JWT_SECRET,{expiresIn:"7d"});
- await sendEmail(email, 'Your OTP Code', `Your verification code is: ${otp}`);
+ await sendEmail(email, 'Your OTP Code', {text:`Your verification code is: ${otp}`});
 res.json({message:"Otp sent to mail",isVerified:true});
 
     }catch(err){res.status(500).json("Server error,user not registered")}
@@ -160,4 +160,49 @@ exports.verifyOtp =async (req,res)=>{
         console.error(error);
         res.status(500).json({ message: 'Server error' });
       }
+    };
+
+    exports.sendResetLink = async (req, res) => {
+      const { email } = req.body;
+      console.log(req.body)
+      const user = await User.findOne({ email });
+      if (!user) return res.status(404).json({ message: "User not found" });
+    
+      const token = crypto.randomBytes(32).toString("hex");
+      user.resetToken = token;
+      user.resetTokenExpiry = Date.now() + 3600000; 
+      await user.save();
+    
+      const resetUrl = `http://localhost:4000/reset-password/${token}`;
+    
+      await sendEmail(
+         user.email,
+       "Reset your password",
+      { html:`<h1>Task Management</h1>
+              <h2>Password Reset</h2>
+              
+               <p>Click below to reset your password:</p>
+               <a href="${resetUrl}">Reset Password</a>`}
+      );
+    
+      res.json({ message: "Reset link sent" });
+    };
+    exports.resetPassword = async (req, res) => {
+      const { token } = req.params;
+      const { newPassword } = req.body;
+    
+      const user = await User.findOne({
+        resetToken: token,
+        resetTokenExpiry: { $gt: Date.now() },
+      });
+    
+      if (!user) return res.status(400).json({ message: "Invalid or expired token" });
+    
+      const hash = await bcrypt.hash(newPassword, 10);
+      user.password = hash;
+      user.resetToken = undefined;
+      user.resetTokenExpiry = undefined;
+      await user.save();
+    
+      res.json({ message: "Password reset successfully" });
     };

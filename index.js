@@ -19,63 +19,51 @@ const PORT=4000 || 5000;
 
 
 
-
 const { Server } = require("socket.io");
-
-
 const io = new Server(server, {
   cors: { origin: "*" }
 });
 
-
-
-
+// API to get users
 app.get("/api/users", async (req, res) => {
   const users = await User.find();
   res.json(users);
 });
-const online=[];
-let users = {}; // Keeps track of connected users by userId: socketId
-console.log(users)
+
+// Socket.IO
+let users = {}; // userId: socketId
+
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
   socket.on("joinRoom", (userId) => {
-    users[userId] = socket.id;  // Add the user to the users object
-    socket.emit("yourID", socket.id);  // Emit the user's socket id
-    console.log(users);
-    // Emit the updated list of online users to all clients
-    io.emit("onlineUsers",  Object.keys(users));
-    console.log(users)  // Emit list of online user ids
+    users[userId] = socket.id;
+    socket.emit("yourID", socket.id);
+    io.emit("onlineUsers", Object.keys(users));
   });
 
-  socket.on("callUser", (data) => {
-    const { from, to, signal } = data;
+  socket.on("callUser", ({ from, to, signal }) => {
     const toSocketId = users[to];
     if (toSocketId) {
       io.to(toSocketId).emit("incomingCall", { from, signal });
     }
   });
 
-  socket.on("answerCall", (data) => {
-    const { to, signal } = data;
+  socket.on("answerCall", ({ to, signal }) => {
     const toSocketId = users[to];
     if (toSocketId) {
       io.to(toSocketId).emit("callAnswered", { signal });
     }
   });
-socket.on("onlineUsers",()=>{io.emit(users)})
+
   socket.on("disconnect", () => {
-    // Find the user who disconnected and remove them from the users object
     for (let [userId, socketId] of Object.entries(users)) {
       if (socketId === socket.id) {
-        delete users[userId];  // Remove user from the online list
+        delete users[userId];
         break;
       }
     }
-
-    // Emit the updated list of online users after someone disconnects
-    io.emit("onlineUsers",online.push(Object.keys(users)) );
+    io.emit("onlineUsers", Object.keys(users));
   });
 });
 

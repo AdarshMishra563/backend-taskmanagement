@@ -173,7 +173,7 @@ exports.verifyOtp =async (req,res)=>{
       user.resetTokenExpiry = Date.now() + 3600000; 
       await user.save();
     
-      const resetUrl = `http://localhost:4000/reset-password/${token}`;
+      const resetUrl = `https://frontend-taskmanagement-kohl.vercel.app/reset-password/${token}`;
     
       await sendEmail(
          user.email,

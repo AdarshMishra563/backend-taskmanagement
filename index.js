@@ -28,64 +28,51 @@ const io = new Server(server, {
 const onlineUsers = new Set();
 
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
-
-  // Handle joining a room
-  socket.on("joinRoom", (userId) => {
-    console.log(`User ${userId} joined`);
-    socket.userId = userId;
-    onlineUsers.add(userId);
-
-    // Send updated list of online users to everyone
-    io.emit("onlineUsers", Array.from(onlineUsers));
-  });
-
-  // Handle callUser event
-  socket.on("callUser", ({ from, to, signal }) => {
-    console.log(`Call from ${from} to ${to}`);
-    // Find the socket of the callee
-    for (let [id, s] of io.of("/").sockets) {
-      if (s.userId === to) {
-        io.to(s.id).emit("incomingCall", { from, signal });
-        break;
+    console.log("User connected:", socket.id);
+  
+    socket.on("joinRoom", (userId) => {
+      users[userId] = socket.id;
+      socket.userId = userId;
+      console.log("Current users:", users);
+      io.emit("onlineUsers", Object.keys(users));
+    });
+  
+    socket.on("callUser", ({ from, to, signal }) => {
+      const calleeSocketId = users[to];
+      if (calleeSocketId) {
+        io.to(calleeSocketId).emit("incomingCall", { from, signal });
+        console.log(`Call from ${from} to ${to}`);
+      } else {
+        console.log(`User ${to} not found online`);
       }
-    }
-  });
-
-  // Handle answerCall event
-  socket.on("answerCall", ({ to, signal }) => {
-    console.log(`Answer to ${to}`);
-    // Find the socket of the caller
-    for (let [id, s] of io.of("/").sockets) {
-      if (s.userId === to) {
-        io.to(s.id).emit("callAnswered", { signal });
-        break;
+    });
+  
+    socket.on("answerCall", ({ to, signal }) => {
+      const callerSocketId = users[to];
+      if (callerSocketId) {
+        io.to(callerSocketId).emit("callAnswered", { signal });
+        console.log(`Answer sent to ${to}`);
       }
-    }
-  });
-
-  // Handle ICE Candidate exchange
-  socket.on("sendIceCandidate", ({ to, candidate }) => {
-    console.log(`ICE candidate sent to ${to}`);
-    for (let [id, s] of io.of("/").sockets) {
-      if (s.userId === to) {
-        io.to(s.id).emit("receiveIceCandidate", { candidate });
-        break;
+    });
+  
+    socket.on("sendIceCandidate", ({ to, candidate }) => {
+      const targetSocketId = users[to];
+      if (targetSocketId) {
+        io.to(targetSocketId).emit("receiveIceCandidate", { candidate });
       }
-    }
+    });
+  
+    socket.on("disconnect", () => {
+      if (socket.userId) {
+        delete users[socket.userId];
+        io.emit("onlineUsers", Object.keys(users));
+        console.log("User disconnected:", socket.userId);
+      }
+    });
   });
-
-  // On disconnect
-  socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.userId);
-    onlineUsers.delete(socket.userId);
-    io.emit("onlineUsers", Array.from(onlineUsers));
+  
+  app.get("/", (req, res) => {
+    res.send("WebRTC signaling server is running.");
   });
-});
-
-// API endpoint to check server is running
-app.get("/", (req, res) => {
-  res.send("WebRTC signaling server is running.");
-});
-
+  
 server.listen(PORT,()=>console.log(`Server is running on ${PORT}`))  

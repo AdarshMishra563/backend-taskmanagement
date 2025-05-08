@@ -25,7 +25,7 @@ const io = new Server(server, {
 });
 
 // Track online users
-const onlineUsers = new Set();
+const users = {};
 
 io.on("connection", (socket) => {
     console.log("User connected:", socket.id);

@@ -36,9 +36,8 @@ const newuser=new User({name,email,password:hashpass,otp: hashedOtp,
     
 await newuser.save();
 
-console.log(newuser)
 const payload={user:{id:newuser.id}};
-console.log(payload)
+
 const token=jwt.sign(payload,process.env.JWT_SECRET,{expiresIn:"7d"});
  await sendEmail(email, 'Your OTP Code', `Your verification code is: ${otp}`);
 res.json({message:"Otp sent to mail",isVerified:true});

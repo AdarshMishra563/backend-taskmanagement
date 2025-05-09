@@ -55,7 +55,13 @@ io.on("connection", (socket) => {
       }
     });
     socket.on("endCall", ({ to }) => {
-        io.to(to).emit("callEnded");
+        const targetSocketId = users[to];
+        if (targetSocketId) {
+          io.to(targetSocketId).emit("callEnded");
+          console.log(`End call sent to ${to}`);
+        } else {
+          console.log(`User ${to} not found online`);
+        }
       });
       
     socket.on("sendIceCandidate", ({ to, candidate }) => {

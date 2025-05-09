@@ -21,7 +21,10 @@ const PORT=4000 || 5000;
 
 const { Server } = require("socket.io");
 const io = new Server(server, {
-  cors: { origin: "*" }
+  cors: { origin: "*",
+    methods: ["GET", "POST"]
+   },
+   transports:['websocket','polling'],
 });
 
 

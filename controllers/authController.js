@@ -206,3 +206,9 @@ exports.verifyOtp =async (req,res)=>{
     
       res.json({ message: "Password reset successfully" });
     };
+    exports.id=async()=>{
+
+
+
+
+    };

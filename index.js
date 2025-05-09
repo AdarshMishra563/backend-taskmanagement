@@ -24,7 +24,7 @@ const io = new Server(server, {
   cors: { origin: "*" }
 });
 
-// Track online users
+
 const users = {};
 
 io.on("connection", (socket) => {
@@ -54,7 +54,10 @@ io.on("connection", (socket) => {
         console.log(`Answer sent to ${to}`);
       }
     });
-  
+    socket.on("endCall", ({ to }) => {
+        io.to(to).emit("callEnded");
+      });
+      
     socket.on("sendIceCandidate", ({ to, candidate }) => {
       const targetSocketId = users[to];
       if (targetSocketId) {

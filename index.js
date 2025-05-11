@@ -29,6 +29,7 @@ const io = new Server(server, {
 
 
 const users = {};
+const pendingCalls = {};
 
 io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
@@ -44,6 +45,7 @@ io.on("connection", (socket) => {
       const calleeSocketId = users[to];
       if (calleeSocketId) {
         io.to(calleeSocketId).emit("incomingCall", { from, signal });
+        pendingCalls[to] = from;
         console.log(`Call from ${from} to ${to}`);
       } else {
         console.log(`User ${to} not found online`);
@@ -55,6 +57,7 @@ io.on("connection", (socket) => {
       if (callerSocketId) {
         io.to(callerSocketId).emit("callAnswered", { signal });
         console.log(`Answer sent to ${to}`);
+        delete pendingCalls[to];
       }
     });
     socket.on("endCall", ({ to }) => {
@@ -62,10 +65,19 @@ io.on("connection", (socket) => {
         if (targetSocketId) {
           io.to(targetSocketId).emit("callEnded");
           console.log(`End call sent to ${to}`);
+          delete pendingCalls[to];
         } else {
           console.log(`User ${to} not found online`);
         }
       });
+      socket.on("checkIncomingCall", (userId, callback) => {
+        if (pendingCalls[userId]) {
+          callback({ hasIncomingCall: true, from: pendingCalls[userId] });
+        } else {
+          callback({ hasIncomingCall: false });
+        }
+      });
+      
       
     socket.on("sendIceCandidate", ({ to, candidate }) => {
       const targetSocketId = users[to];

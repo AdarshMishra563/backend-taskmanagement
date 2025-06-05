@@ -4,6 +4,11 @@ require('dotenv').config();
 const sendEmail=require('../sendEmail');
 const User=require('../model/User');
 const crypto=require('crypto')
+
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client('903202728181-ndf0t06toltn1f0aj6cucoa7pm1dmdi5.apps.googleusercontent.com');
+
+
 exports.register=async (req,res)=>{
     const {name,email,password}=req.body;
     console.log(req.body)
@@ -206,8 +211,15 @@ exports.verifyOtp =async (req,res)=>{
     
       res.json({ message: "Password reset successfully" });
     };
-    exports.id=async()=>{
+    exports.googleLogin=async(req,res)=>{
 
+
+const ticket = await client.verifyIdToken({
+    idToken,
+    audience: '903202728181-ndf0t06toltn1f0aj6cucoa7pm1dmdi5.apps.googleusercontent.com', 
+  });
+const payload = ticket.getPayload();
+res.json(payload);
 
 
 

@@ -1,5 +1,5 @@
 const express=require("express");
-const {register,login,verifyOtp,getUserFromToken,getAllUsers, AllUsers, sendResetLink, resetPassword}=require("../controllers/authController");
+const {register,login,verifyOtp,getUserFromToken,getAllUsers, AllUsers, sendResetLink, resetPassword,googleLogin}=require("../controllers/authController");
 const taskController=require('../controllers/TaskController')
 const authmiddleware = require("../middleware/authmiddleware");
 const router=express.Router();
@@ -19,4 +19,5 @@ router.put('/tasks/:id', authmiddleware, taskController.updateTask);
 router.delete('/tasks/:id', authmiddleware, taskController.deleteTask);
 router.get('/notification',authmiddleware,taskController.getNotifications);
 router.put("/notifications/markread",authmiddleware,taskController.markAllNotificationsAsRead);
+router.post("/googlelogin",googleLogin)
 module.exports=router;

@@ -211,7 +211,7 @@ exports.verifyOtp =async (req,res)=>{
     
       res.json({ message: "Password reset successfully" });
     };
-  exports.googleLogin = async (req, res) => {
+ exports.googleLogin = async (req, res) => {
   try {
     const { idToken } = req.body;
 
@@ -230,10 +230,41 @@ exports.verifyOtp =async (req,res)=>{
       return res.status(401).json({ message: 'Failed verification through Google' });
     }
 
-   
-    return res.status(200).json({ 
-      message: 'Google login successful',
-      user: payload,
+    const { email, name, email_verified, picture } = payload;
+
+    if (!email_verified) {
+      return res.status(400).json({ message: 'Email not verified by Google' });
+    }
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      
+      const password = Math.floor(100000 + Math.random() * 900000).toString();
+
+      user = new User({
+        email,
+        name,
+        password,
+        picture, 
+      });
+
+      await user.save();
+    }
+
+ 
+    const tokenPayload = { user: { id: user.id } };
+    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+    res.status(200).json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        picture: user.picture,
+      },
     });
 
   } catch (error) {
@@ -243,7 +274,6 @@ exports.verifyOtp =async (req,res)=>{
       return res.status(401).json({ message: 'ID token expired' });
     }
 
-   
     return res.status(500).json({ message: 'Internal server error during Google login' });
   }
 };

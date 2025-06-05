@@ -213,7 +213,7 @@ exports.verifyOtp =async (req,res)=>{
     };
     exports.googleLogin=async(req,res)=>{
 
-
+const {idToken}=req.body;
 const ticket = await client.verifyIdToken({
     idToken,
     audience: '903202728181-ndf0t06toltn1f0aj6cucoa7pm1dmdi5.apps.googleusercontent.com', 

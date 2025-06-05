@@ -211,17 +211,39 @@ exports.verifyOtp =async (req,res)=>{
     
       res.json({ message: "Password reset successfully" });
     };
-    exports.googleLogin=async(req,res)=>{
+  exports.googleLogin = async (req, res) => {
+  try {
+    const { idToken } = req.body;
 
-const {idToken}=req.body;
-const ticket = await client.verifyIdToken({
-    idToken,
-    audience: '903202728181-ndf0t06toltn1f0aj6cucoa7pm1dmdi5.apps.googleusercontent.com', 
-  });
-const payload = ticket.getPayload();
-if(!payload){res.json({message:"failed verification through google"})}
-res.json(payload);
+    if (!idToken) {
+      return res.status(400).json({ message: 'ID token is required' });
+    }
 
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: '903202728181-ndf0t06toltn1f0aj6cucoa7pm1dmdi5.apps.googleusercontent.com',
+    });
 
+    const payload = ticket.getPayload();
 
-    };
+    if (!payload) {
+      return res.status(401).json({ message: 'Failed verification through Google' });
+    }
+
+   
+    return res.status(200).json({ 
+      message: 'Google login successful',
+      user: payload,
+    });
+
+  } catch (error) {
+    console.error('Google login error:', error);
+
+    if (error.message && error.message.includes('Token used too late')) {
+      return res.status(401).json({ message: 'ID token expired' });
+    }
+
+   
+    return res.status(500).json({ message: 'Internal server error during Google login' });
+  }
+};

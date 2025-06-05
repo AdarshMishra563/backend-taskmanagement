@@ -219,6 +219,7 @@ const ticket = await client.verifyIdToken({
     audience: '903202728181-ndf0t06toltn1f0aj6cucoa7pm1dmdi5.apps.googleusercontent.com', 
   });
 const payload = ticket.getPayload();
+if(!payload){res.json({message:"failed verification through google"})}
 res.json(payload);
 
 

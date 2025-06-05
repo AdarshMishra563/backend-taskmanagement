@@ -236,7 +236,7 @@ exports.verifyOtp =async (req,res)=>{
       return res.status(400).json({ message: 'Email not verified by Google' });
     }
 
-    // Check if user exists
+    
     let user = await User.findOne({ email });
 
     if (!user) {

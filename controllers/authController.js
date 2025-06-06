@@ -63,7 +63,7 @@ exports.login = async (req, res) => {
       const payload = { user: { id: user.id } };
       const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
   
-      res.json({ token });
+      res.json({ token,user });
     } catch (err) {
       res.status(500).send("Server Error");
     }
@@ -93,7 +93,7 @@ exports.verifyOtp =async (req,res)=>{
         const payload={user:{id:user.id}};
         console.log(payload)
         const token=jwt.sign(payload,process.env.JWT_SECRET,{expiresIn:"7d"});
-        res.status(200).json({ token,message: 'OTP verified successfully.' ,isVerified:true});
+        res.status(200).json({ token,user,message: 'OTP verified successfully.' ,isVerified:true});
     
       } catch (err) {
         console.error(err);

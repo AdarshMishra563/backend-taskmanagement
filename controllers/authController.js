@@ -239,21 +239,19 @@ exports.verifyOtp =async (req,res)=>{
     
     let user = await User.findOne({ email });
 
-    if (!user) {
-      
-      const password = Math.floor(100000 + Math.random() * 900000).toString();
+   if (!user) {
+  const password = Math.floor(100000 + Math.random() * 900000).toString();
 
-      user = new User({
-        email,
-        name,
-        password,
-        picture, 
-          isVerified = true;
-      });
+  user = new User({
+    email,
+    name,
+    password,
+    picture,
+    isVerified: true
+  });
 
-      await user.save();
-    }
-
+  await user.save();
+}
  
     const tokenPayload = { user: { id: user.id } };
     const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: '7d' });

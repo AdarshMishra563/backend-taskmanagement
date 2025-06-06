@@ -248,6 +248,7 @@ exports.verifyOtp =async (req,res)=>{
         name,
         password,
         picture, 
+          isVerified = true;
       });
 
       await user.save();

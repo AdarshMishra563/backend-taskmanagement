@@ -13,7 +13,7 @@ const authRoutes=require('./routes/authRoutes');
 app.use("/api/auth",authRoutes);
 
 
-const PORT=4000 || 5000;
+const PORT=4000;
 
 
 

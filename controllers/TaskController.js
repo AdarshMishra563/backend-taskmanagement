@@ -216,7 +216,7 @@ exports.getOptimalUserForTask = async (req, res) => {
       const completedTasks = tasks.filter(task => 
         task.assignedTo && 
         task.assignedTo._id.equals(user._id) && 
-        task.status === 'completed'
+        task.status === 'Done'
       ).length;
 
       return {

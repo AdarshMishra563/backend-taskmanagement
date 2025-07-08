@@ -4,7 +4,7 @@ require('dotenv').config();
 const sendEmail=require('../sendEmail');
 const User=require('../model/User');
 const crypto=require('crypto')
-const { createLog } = require('../services/logger');
+const { createLog } = require('./logger');
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client('903202728181-ndf0t06toltn1f0aj6cucoa7pm1dmdi5.apps.googleusercontent.com');
 

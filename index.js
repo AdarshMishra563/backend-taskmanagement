@@ -79,11 +79,11 @@ io.on("connection", (socket) => {
         io.to(targetSocketId).emit("receiveIceCandidate", { candidate });
       }
     });
-  socket.on("startEditingTask", ({ taskId, userName }) => {
-  editingTasks[taskId] = userName;
-     socket.userName = userName;
-  io.emit("taskEditingStatus", { taskId, editingBy: userName });
-  console.log(`Task ${taskId} is being edited by ${userName}`);
+  socket.on("startEditingTask", ({ taskId, useremail }) => {
+  editingTasks[taskId] = useremail;
+     socket.useremail = useremail;
+  io.emit("taskEditingStatus", { taskId, editingBy: useremail });
+  console.log(`Task ${taskId} is being edited by ${useremail}`);
 });
 
 socket.on("stopEditingTask", ({ taskId }) => {
@@ -100,7 +100,7 @@ socket.on("stopEditingTask", ({ taskId }) => {
       };
 
       for (const [taskId, userName] of Object.entries(editingTasks)) {
-  if (socket.userName === userName) {
+  if (socket.useremail === useremail) {
     delete editingTasks[taskId];
     io.emit("taskEditingStatus", { taskId, editingBy: null });
   }

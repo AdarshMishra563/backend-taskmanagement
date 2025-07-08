@@ -79,17 +79,59 @@ io.on("connection", (socket) => {
         io.to(targetSocketId).emit("receiveIceCandidate", { candidate });
       }
     });
-  socket.on("startEditingTask", ({ taskId, useremail }) => {
-  editingTasks[taskId] = useremail;
-     socket.useremail = useremail;
-  io.emit("taskEditingStatus", { taskId, editingBy: useremail });
-  console.log(`Task ${taskId} is being edited by ${useremail}`);
+
+
+
+
+socket.on("startEditingTask", ({ taskId, useremail }) => {
+  const currentEditor = editingTasks[taskId];
+
+  if (currentEditor) {
+    if (currentEditor !== useremail) {
+    
+      socket.emit("taskEditingStatus", {
+        taskId,
+        editingBy: currentEditor,
+        conflict: true,
+        attemptedBy: useremail
+      });
+
+     
+      const editorSocketId = getSocketIdByEmail(currentEditor);
+      if (editorSocketId) {
+        io.to(editorSocketId).emit("taskEditingConflict", {
+          taskId,
+          attemptedBy: useremail
+        });
+      }
+
+      console.log(
+        `User ${useremail} tried editing task ${taskId} already being edited by ${currentEditor}`
+      );
+    }
+  } else {
+   
+    editingTasks[taskId] = useremail;
+    socket.useremail = useremail;
+
+    
+    io.emit("taskEditingStatus", {
+      taskId,
+      editingBy: useremail,
+      conflict: false
+    });
+
+    console.log(`Task ${taskId} is being edited by ${useremail}`);
+  }
 });
 
-socket.on("stopEditingTask", ({ taskId }) => {
-  delete editingTasks[taskId];
-  io.emit("taskEditingStatus", { taskId, editingBy: null });
-  console.log(`Task ${taskId} edit released`);
+
+socket.on("stopEditingTask", ({ taskId, useremail }) => {
+  if (editingTasks[taskId] === useremail) {
+    delete editingTasks[taskId];
+    io.emit("taskEditingStopped", { taskId });
+    console.log(`${useremail} stopped editing task ${taskId}`);
+  }
 });
 
     socket.on("disconnect", () => {

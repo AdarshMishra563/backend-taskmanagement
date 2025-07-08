@@ -8,11 +8,16 @@ require("dotenv").config();
 const app = express();
 
 const corsOptions = {
-  origin: "*", 
-  methods: ["GET", "POST","PUT","DELETE"],
+  origin: [
+    "https://frontend-taskmanagement-kohl.vercel.app",
+    "http://localhost:3000" 
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  optionsSuccessStatus: 200
 };
-
+app.options('*', cors(corsOptions));
 app.use(cors(corsOptions));
 const server = http.createServer(app);
 app.use(express.json());

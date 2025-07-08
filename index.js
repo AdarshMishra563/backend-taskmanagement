@@ -151,7 +151,7 @@ socket.on("stopEditingTask", ({ taskId, useremail }) => {
   });
   
   app.get("/", (req, res) => {
-    res.send("WebRTC signaling server is running.");
+    res.send("WebRTC signaling server is running now .");
   });
   
 server.listen(PORT,()=>console.log(`Server is running on ${PORT}`))  

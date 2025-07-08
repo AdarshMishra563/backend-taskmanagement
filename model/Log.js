@@ -21,7 +21,7 @@ const LogSchema = new mongoose.Schema({
   },
   relatedEntityModel: {
     type: String,
-    enum: ['Task', 'User']
+    enum: ['Task', 'Taskmanagementusers']
   },
   ipAddress: {
     type: String

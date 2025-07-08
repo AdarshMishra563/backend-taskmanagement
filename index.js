@@ -33,19 +33,23 @@ const io = new Server(server, {
 });
 
 
-const users = {};
-const editingTasks = {};
+const users = {};        
+const userDetails = {};  
+const editingTasks = {}; 
 
 io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
   
-    socket.on("joinRoom", (userId) => {
-      users[userId] = socket.id;
-      socket.userId = userId;
-      console.log("Current users:", users);
-      io.emit("onlineUsers", Object.keys(users));
-    });
-  
+ 
+  socket.on("joinRoom", ({ userId, email }) => {
+    users[userId] = socket.id;
+    userDetails[socket.id] = { userId, email };
+    socket.userId = userId;
+    socket.userEmail = email;
+    console.log("Current users:", users);
+    io.emit("onlineUsers", Object.keys(users));
+  });
+
     socket.on("callUser", ({ from, to, signal }) => {
       const calleeSocketId = users[to];
       if (calleeSocketId) {
@@ -81,73 +85,94 @@ io.on("connection", (socket) => {
     });
 
 
-
-
 socket.on("startEditingTask", ({ taskId, useremail }) => {
-  const currentEditor = editingTasks[taskId];
+    try {
+      const currentEditor = editingTasks[taskId];
 
-  if (currentEditor) {
-    if (currentEditor !== useremail) {
-    
-      socket.emit("taskEditingStatus", {
-        taskId,
-        editingBy: currentEditor,
-        conflict: true,
-        attemptedBy: useremail
-      });
+      if (currentEditor) {
+        if (currentEditor !== useremail) {
+        
+          socket.emit("taskEditingStatus", {
+            taskId,
+            editingBy: currentEditor,
+            conflict: true,
+            attemptedBy: useremail
+          });
 
-     
-      const editorSocketId = getSocketIdByEmail(currentEditor);
-      if (editorSocketId) {
-        io.to(editorSocketId).emit("taskEditingConflict", {
-          taskId,
-          attemptedBy: useremail
-        });
+          
+          const editorSocketId = Object.keys(userDetails).find(
+            socketId => userDetails[socketId].email === currentEditor
+          );
+          
+          if (editorSocketId) {
+            io.to(editorSocketId).emit("taskEditingConflict", {
+              taskId,
+              attemptedBy: useremail
+            });
+          }
+
+          console.log(
+            `User ${useremail} tried editing task ${taskId} already being edited by ${currentEditor}`
+          );
+        }
+        return;
       }
 
-      console.log(
-        `User ${useremail} tried editing task ${taskId} already being edited by ${currentEditor}`
-      );
+      
+      editingTasks[taskId] = useremail;
+      socket.userEmail = useremail;
+
+     
+      io.emit("taskEditingStatus", {
+        taskId,
+        editingBy: useremail,
+        conflict: false
+      });
+
+      console.log(`Task ${taskId} is being edited by ${useremail}`);
+    } catch (error) {
+      console.error("Error in startEditingTask:", error);
     }
-  } else {
-   
-    editingTasks[taskId] = useremail;
-    socket.useremail = useremail;
+  });
 
-    
-    io.emit("taskEditingStatus", {
-      taskId,
-      editingBy: useremail,
-      conflict: false
-    });
+  socket.on("stopEditingTask", ({ taskId, useremail }) => {
+    try {
+      if (editingTasks[taskId] === useremail) {
+        delete editingTasks[taskId];
+        io.emit("taskEditingStopped", { taskId });
+        console.log(`${useremail} stopped editing task ${taskId}`);
+      }
+    } catch (error) {
+      console.error("Error in stopEditingTask:", error);
+    }
+  });
 
-    console.log(`Task ${taskId} is being edited by ${useremail}`);
-  }
-});
-
-
-socket.on("stopEditingTask", ({ taskId, useremail }) => {
-  if (editingTasks[taskId] === useremail) {
-    delete editingTasks[taskId];
-    io.emit("taskEditingStopped", { taskId });
-    console.log(`${useremail} stopped editing task ${taskId}`);
-  }
-});
-
-    socket.on("disconnect", () => {
+  socket.on("disconnect", () => {
+    try {
+      
       if (socket.userId) {
         delete users[socket.userId];
         io.emit("onlineUsers", Object.keys(users));
         console.log("User disconnected:", socket.userId);
-      };
+      }
 
-      for (const [taskId, useremail] of Object.entries(editingTasks)) {
-  if (socket.useremail === useremail) {
-    delete editingTasks[taskId];
-    io.emit("taskEditingStatus", { taskId, editingBy: null });
-  }
-}
-    });
+
+      if (socket.userEmail) {
+        for (const [taskId, email] of Object.entries(editingTasks)) {
+          if (email === socket.userEmail) {
+            delete editingTasks[taskId];
+            io.emit("taskEditingStatus", { taskId, editingBy: null });
+            console.log(`Cleaned up editing task ${taskId} from disconnected user`);
+          }
+        }
+      }
+
+     
+      delete userDetails[socket.id];
+    } catch (error) {
+      console.error("Error during disconnect cleanup:", error);
+    }
+  });
   });
   
   app.get("/", (req, res) => {

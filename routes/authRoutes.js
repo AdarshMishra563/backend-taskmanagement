@@ -21,7 +21,7 @@ router.get('/notification',authmiddleware,taskController.getNotifications);
 router.put("/notifications/markread",authmiddleware,taskController.markAllNotificationsAsRead);
 router.post("/googlelogin",googleLogin);
 router.get('/tasks/optimal-user', authmiddleware, taskController.getOptimalUserForTask);
-router.get('/logs', auth, taskController.getActivityLogs);
-router.get('/logs/all', auth, taskController.getAllActivityLogs);
+router.get('/logs', authmiddleware, taskController.getActivityLogs);
+router.get('/logs/all', authmiddleware, taskController.getAllActivityLogs);
 
 module.exports=router;

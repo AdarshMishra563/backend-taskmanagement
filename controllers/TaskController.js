@@ -1,7 +1,7 @@
 const Task=require('../model/Task');
 const Notification=require('../model/Notification');
 const User=require('../model/User')
-const { createLog } = require('../services/logger');
+const { createLog } = require('./logger');
 exports.createTask = async (req, res) => {
     const { title, description, dueDate,status, priority, assignedTo } = req.body;
     try {

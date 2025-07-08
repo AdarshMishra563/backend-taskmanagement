@@ -228,7 +228,14 @@ exports.verifyOtp =async (req,res)=>{
       user.resetToken = undefined;
       user.resetTokenExpiry = undefined;
       await user.save();
-    
+     await createLog(
+  'password_reset',
+  user.id,
+  'User reset their password', 
+  user,
+  req
+);
+   
       res.json({ message: "Password reset successfully" });
     };
  exports.googleLogin = async (req, res) => {

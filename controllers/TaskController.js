@@ -122,14 +122,16 @@ exports.createTask = async (req, res) => {
       const task = await Task.findById(req.params.id);
       if (!task) return res.status(404).json({ message: 'Task not found' });
   
-      if (title) task.title = title;
-      if (description) task.description = description;
-      if (dueDate) task.dueDate = dueDate;
-      if (priority) task.priority = priority;
-      if (status) task.status = status;
-      if (assignedTo) task.assignedTo = assignedTo;
-  
-      await task.save();
+         const changes = [];
+
+    if (title && task.title !== title) { changes.push(`title: ${task.title} → ${title}`); task.title = title; }
+    if (description && task.description !== description) { changes.push(`description updated`); task.description = description; }
+    if (dueDate && task.dueDate !== dueDate) { changes.push(`dueDate: ${task.dueDate} → ${dueDate}`); task.dueDate = dueDate; }
+    if (priority && task.priority !== priority) { changes.push(`priority: ${task.priority} → ${priority}`); task.priority = priority; }
+    if (status && task.status !== status) { changes.push(`status: ${task.status} → ${status}`); task.status = status; }
+    if (assignedTo && task.assignedTo?.toString() !== assignedTo) { changes.push(`assignedTo: ${task.assignedTo} → ${assignedTo}`); task.assignedTo = assignedTo; }
+
+    await task.save();
 
           await createLog(
             'task_update', 

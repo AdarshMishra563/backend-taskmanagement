@@ -198,8 +198,7 @@ exports.createTask = async (req, res) => {
   };
 exports.getOptimalUserForTask = async (req, res) => {
   try {
-   
-     const users = await User.find({ isVerified: true }, '_id name');
+    const users = await User.find({ isVerified: true }, '_id name');
     const tasks = await Task.find({})
       .populate('createdBy', '_id')
       .populate('assignedTo', '_id');
@@ -207,17 +206,17 @@ exports.getOptimalUserForTask = async (req, res) => {
     const userTaskStats = users.map(user => {
       const createdTasks = tasks.filter(task => 
         task.createdBy && task.createdBy._id.equals(user._id)
-      ).length;
+      .length;
       
       const assignedTasks = tasks.filter(task => 
-        task.assignedTo && task.assignedTo._id.equals(user._id)
-      ).length;
+        task.assignedTo && task.assignedTo._id.equals(user._id))
+      .length;
       
       const completedTasks = tasks.filter(task => 
         task.assignedTo && 
         task.assignedTo._id.equals(user._id) && 
-        task.status === 'Done'
-      ).length;
+        task.status === 'Done')
+      .length;
 
       return {
         user,
@@ -226,7 +225,7 @@ exports.getOptimalUserForTask = async (req, res) => {
       };
     });
 
-
+   
     userTaskStats.sort((a, b) => {
       if (a.totalTasks !== b.totalTasks) {
         return a.totalTasks - b.totalTasks;
@@ -234,13 +233,26 @@ exports.getOptimalUserForTask = async (req, res) => {
       return b.completedTasks - a.completedTasks;
     });
 
-    const optimalUser = userTaskStats.length > 0 
-      ? userTaskStats[0].user 
-      : null;
+    
+    let optimalUser = null;
+    if (userTaskStats.length > 0) {
+      const minTotalTasks = userTaskStats[0].totalTasks;
+      const topCandidates = userTaskStats.filter(
+        stat => stat.totalTasks === minTotalTasks
+      );
+
+      if (topCandidates.length === 1) {
+        optimalUser = topCandidates[0].user;
+      } else {
+       
+        const randomIndex = Math.floor(Math.random() * topCandidates.length);
+        optimalUser = topCandidates[randomIndex].user;
+      }
+    }
 
     res.json({
-      optimalUser,
-      stats: userTaskStats 
+      optimalUser, 
+      stats: userTaskStats  
     });
 
   } catch (err) {

@@ -2,6 +2,40 @@ const Task=require('../model/Task');
 const Notification=require('../model/Notification');
 const User=require('../model/User')
 const { createLog } = require('./logger');
+
+const Log = require('../model/Log');
+
+exports.getActivityLogs = async (req, res) => {
+    try {
+        const logs = await Log.find({ user: req.user.id })
+            .sort({ createdAt: -1 })
+            .limit(20)
+            .populate('user', 'name email')
+            .populate('relatedEntity');
+            
+        res.json(logs);
+    } catch (error) {
+        console.error('Error fetching logs:', error);
+        res.status(500).json({ message: 'Failed to fetch activity logs' });
+    }
+};
+
+exports.getAllActivityLogs = async (req, res) => {
+    try {
+        
+        
+        const logs = await Log.find()
+            .sort({ createdAt: -1 })
+            .limit(100)
+            .populate('user', 'name email')
+            .populate('relatedEntity');
+            
+        res.json(logs);
+    } catch (error) {
+        console.error('Error fetching all logs:', error);
+        res.status(500).json({ message: 'Failed to fetch activity logs' });
+    }
+};
 exports.createTask = async (req, res) => {
     const { title, description, dueDate,status, priority, assignedTo } = req.body;
     try {

@@ -129,3 +129,55 @@ exports.createTask = async (req, res) => {
       res.status(500).json({ message: 'Failed to update notifications' });
     }
   };
+exports.getOptimalUserForTask = async (req, res) => {
+  try {
+   
+    const users = await User.find({}, '_id name');
+    const tasks = await Task.find({})
+      .populate('createdBy', '_id')
+      .populate('assignedTo', '_id');
+
+    const userTaskStats = users.map(user => {
+      const createdTasks = tasks.filter(task => 
+        task.createdBy && task.createdBy._id.equals(user._id)
+      ).length;
+      
+      const assignedTasks = tasks.filter(task => 
+        task.assignedTo && task.assignedTo._id.equals(user._id)
+      ).length;
+      
+      const completedTasks = tasks.filter(task => 
+        task.assignedTo && 
+        task.assignedTo._id.equals(user._id) && 
+        task.status === 'completed'
+      ).length;
+
+      return {
+        user,
+        totalTasks: createdTasks + assignedTasks,
+        completedTasks
+      };
+    });
+
+
+    userTaskStats.sort((a, b) => {
+      if (a.totalTasks !== b.totalTasks) {
+        return a.totalTasks - b.totalTasks;
+      }
+      return b.completedTasks - a.completedTasks;
+    });
+
+    const optimalUser = userTaskStats.length > 0 
+      ? userTaskStats[0].user 
+      : null;
+
+    res.json({
+      optimalUser,
+      stats: userTaskStats 
+    });
+
+  } catch (err) {
+    console.error('Error finding optimal user:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

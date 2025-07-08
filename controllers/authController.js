@@ -71,7 +71,7 @@ exports.login = async (req, res) => {
       const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
    await createLog(
             'login', 
-            user._id, 
+            user.id, 
             'User logged in', 
             user,
             req

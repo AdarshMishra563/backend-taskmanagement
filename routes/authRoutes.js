@@ -19,5 +19,6 @@ router.put('/tasks/:id', authmiddleware, taskController.updateTask);
 router.delete('/tasks/:id', authmiddleware, taskController.deleteTask);
 router.get('/notification',authmiddleware,taskController.getNotifications);
 router.put("/notifications/markread",authmiddleware,taskController.markAllNotificationsAsRead);
-router.post("/googlelogin",googleLogin)
+router.post("/googlelogin",googleLogin);
+router.get('/tasks/optimal-user', authmiddleware, taskController.getOptimalUserForTask);
 module.exports=router;

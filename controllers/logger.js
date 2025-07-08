@@ -1,6 +1,5 @@
 const Log = require('../model/Log');
 const User = require('../model/User');
-
 const createLog = async (action, userId, details, relatedEntity = null, req = null) => {
   try {
     const logData = {
@@ -18,14 +17,20 @@ const createLog = async (action, userId, details, relatedEntity = null, req = nu
 
     const log = new Log(logData);
     await log.save();
+
     
-   
-    if (action !== 'login') { 
-      await Log.deleteMany({ user: userId })
+    if (action !== 'login') {
+      const oldLogs = await Log.find({ user: userId })
+        .sort({ createdAt: -1 })
         .skip(1000)
-        .sort({ createdAt: -1 });
+        .select('_id');
+
+      if (oldLogs.length > 0) {
+        const ids = oldLogs.map(l => l._id);
+        await Log.deleteMany({ _id: { $in: ids } });
+      }
     }
-    
+
     return log;
   } catch (error) {
     console.error('Failed to create log:', error);

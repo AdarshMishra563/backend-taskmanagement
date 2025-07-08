@@ -132,7 +132,7 @@ exports.createTask = async (req, res) => {
 exports.getOptimalUserForTask = async (req, res) => {
   try {
    
-    const users = await User.find({}, '_id name');
+     const users = await User.find({ isVerified: true }, '_id name');
     const tasks = await Task.find({})
       .populate('createdBy', '_id')
       .populate('assignedTo', '_id');

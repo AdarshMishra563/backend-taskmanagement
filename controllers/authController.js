@@ -4,7 +4,7 @@ require('dotenv').config();
 const sendEmail=require('../sendEmail');
 const User=require('../model/User');
 const crypto=require('crypto')
-
+const { createLog } = require('../services/logger');
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client('903202728181-ndf0t06toltn1f0aj6cucoa7pm1dmdi5.apps.googleusercontent.com');
 
@@ -40,6 +40,13 @@ const newuser=new User({name,email,password:hashpass,otp: hashedOtp,
     otpExpires: Date.now() + 10 * 60 * 1000});
     
 await newuser.save();
+         await createLog(
+            'register', 
+            newuser.id, 
+            'User registration initiated', 
+            newuser,
+            req
+        );
 
 const payload={user:{id:newuser.id}};
 
@@ -62,7 +69,13 @@ exports.login = async (req, res) => {
   
       const payload = { user: { id: user.id } };
       const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
-  
+   await createLog(
+            'login', 
+            user.id, 
+            'User logged in', 
+            user,
+            req
+        );
       res.json({ token,user });
     } catch (err) {
       res.status(500).send("Server Error");
@@ -90,6 +103,13 @@ exports.verifyOtp =async (req,res)=>{
         user.otpExpires = undefined;
     
         await user.save();
+           await createLog(
+            'register', 
+            user.id, 
+            'User successfully verified', 
+            user,
+            req
+        );
         const payload={user:{id:user.id}};
         console.log(payload)
         const token=jwt.sign(payload,process.env.JWT_SECRET,{expiresIn:"7d"});

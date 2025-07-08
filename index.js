@@ -6,7 +6,14 @@ const http = require("http");
 const cors = require("cors");
 require("dotenv").config();
 const app = express();
-app.use(cors());
+
+const corsOptions = {
+  origin: "*", // or specific origin like 'http://localhost:3000'
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
 const server = http.createServer(app);
 app.use(express.json());
 const authRoutes=require('./routes/authRoutes');
@@ -21,9 +28,7 @@ const PORT=4000;
 
 const { Server } = require("socket.io");
 const io = new Server(server, {
-  cors: { origin: "*",
-    methods: ["GET", "POST"]
-   },
+   cors: corsOptions,
    transports:['websocket','polling'],
 });
 

@@ -19,7 +19,7 @@ const createLog = async (action, userId, details, relatedEntity = null, req = nu
     const log = new Log(logData);
     await log.save();
     
-    // Keep only the latest 1000 logs per user (optional)
+   
     if (action !== 'login') { 
       await Log.deleteMany({ user: userId })
         .skip(1000)

@@ -99,7 +99,7 @@ socket.on("stopEditingTask", ({ taskId }) => {
         console.log("User disconnected:", socket.userId);
       };
 
-      for (const [taskId, userName] of Object.entries(editingTasks)) {
+      for (const [taskId, useremail] of Object.entries(editingTasks)) {
   if (socket.useremail === useremail) {
     delete editingTasks[taskId];
     io.emit("taskEditingStatus", { taskId, editingBy: null });

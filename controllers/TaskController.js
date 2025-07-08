@@ -1,15 +1,31 @@
 const Task=require('../model/Task');
 const Notification=require('../model/Notification');
 const User=require('../model/User')
+const { createLog } = require('../services/logger');
 exports.createTask = async (req, res) => {
     const { title, description, dueDate,status, priority, assignedTo } = req.body;
     try {
       const task = new Task({ title, description,status, dueDate, priority, assignedTo, createdBy: req.user.id });
       await task.save();
-  
+    await createLog(
+            'task_create', 
+            req.user.id, 
+            `Created task "${title}"`, 
+            task,
+            req
+        );
       if (assignedTo) {
         const notification = new Notification({ message: `New task assigned: ${title}`, user: assignedTo });
         await notification.save();
+
+           const assignedUser = await User.findById(assignedTo);
+            await createLog(
+                'task_assign', 
+                req.user.id, 
+                `Assigned task "${title}" to ${assignedUser.name}`, 
+                task,
+                req
+            );
       }
   
       res.json(task);
@@ -80,6 +96,15 @@ exports.createTask = async (req, res) => {
       if (assignedTo) task.assignedTo = assignedTo;
   
       await task.save();
+
+          await createLog(
+            'task_update', 
+            req.user.id, 
+            `Updated task "${task.title}": ${changes.join(', ')}`, 
+            task,
+            req
+        );
+
   
       res.json({task,message:"Task updated succesfully"});
     } catch (err) {
@@ -91,7 +116,13 @@ exports.createTask = async (req, res) => {
       console.log(req.params.id)
       const task = await Task.findByIdAndDelete(req.params.id);
       if (!task) return res.status(404).json({ message: 'Task not found' });
-  
+    await createLog(
+            'task_delete', 
+            req.user.id, 
+            `Deleted task "${task.title}"`, 
+            task,
+            req
+        );
       res.json({ message: 'Task deleted successfully' });
     } catch (err) {
       res.status(500).json({ message: 'Server error' });

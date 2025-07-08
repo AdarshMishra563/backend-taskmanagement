@@ -81,6 +81,7 @@ io.on("connection", (socket) => {
     });
   socket.on("startEditingTask", ({ taskId, userName }) => {
   editingTasks[taskId] = userName;
+     socket.userName = userName;
   io.emit("taskEditingStatus", { taskId, editingBy: userName });
   console.log(`Task ${taskId} is being edited by ${userName}`);
 });
@@ -98,12 +99,12 @@ socket.on("stopEditingTask", ({ taskId }) => {
         console.log("User disconnected:", socket.userId);
       };
 
-       for (const [taskId, userName] of Object.entries(editingTasks)) {
-      if (users[socket.userId] === userName) {
-        delete editingTasks[taskId];
-        io.emit("taskEditingStatus", { taskId, editingBy: null });
-      }
-    };
+      for (const [taskId, userName] of Object.entries(editingTasks)) {
+  if (socket.userName === userName) {
+    delete editingTasks[taskId];
+    io.emit("taskEditingStatus", { taskId, editingBy: null });
+  }
+}
     });
   });
   

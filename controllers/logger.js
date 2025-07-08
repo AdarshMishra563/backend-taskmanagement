@@ -1,5 +1,24 @@
 const Log = require('../model/Log');
 const User = require('../model/User');
+
+const getClientIp = (req) => {
+  if (!req) return null;
+  
+ 
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+   
+    return typeof forwarded === 'string' 
+      ? forwarded.split(',')[0].trim()
+      : forwarded[0].split(',')[0].trim();
+  }
+  
+ 
+  if (req.ip) return req.ip;
+  
+
+  return req.connection?.remoteAddress;
+};
 const createLog = async (action, userId, details, relatedEntity = null, req = null) => {
   try {
     const logData = {
@@ -11,7 +30,7 @@ const createLog = async (action, userId, details, relatedEntity = null, req = nu
     };
 
     if (req) {
-      logData.ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+      logData.ipAddress = getClientIp(req);
       logData.userAgent = req.headers['user-agent'];
     }
 

@@ -21,7 +21,7 @@ const authRoutes=require('./routes/authRoutes');
 app.use("/api/auth",authRoutes);
 
 
-const PORT=4000;
+const PORT=  process.env.PORT || 4000;
 
 
 

@@ -241,19 +241,22 @@ exports.getOptimalUserForTask = async (req, res) => {
     });
 
     let optimalUser = null;
-    if (userTaskStats.length > 0) {
-      const minTotalTasks = userTaskStats[0].totalTasks;
-      const topCandidates = userTaskStats.filter(
-        stat => stat.totalTasks === minTotalTasks
-      );
+   if (userTaskStats.length > 0) {
+  const topStat = userTaskStats[0];
 
-      if (topCandidates.length === 1) {
-        optimalUser = topCandidates[0].user;
-      } else {
-        const randomIndex = Math.floor(Math.random() * topCandidates.length);
-        optimalUser = topCandidates[randomIndex].user;
-      }
-    }
+  
+  const topCandidates = userTaskStats.filter(stat =>
+    stat.totalTasks === topStat.totalTasks &&
+    stat.completedTasks === topStat.completedTasks
+  );
+
+  if (topCandidates.length === 1) {
+    optimalUser = topCandidates[0].user;
+  } else {
+    const randomIndex = Math.floor(Math.random() * topCandidates.length);
+    optimalUser = topCandidates[randomIndex].user;
+  }
+}
 
     res.json({
       optimalUser,

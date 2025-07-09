@@ -8,10 +8,10 @@ require("dotenv").config();
 const app = express();
 
 const corsOptions = {
-  origin:"*",
+  origin:"https://frontend-taskmanagement-kohl.vercel.app",
   methods: ["GET", "POST", "PUT", "DELETE",],
   allowedHeaders: ["Content-Type", "Authorization"],
-  
+   credentials: true
 };
 
 app.use(cors(corsOptions));
@@ -31,6 +31,7 @@ const { Server } = require("socket.io");
 const io = new Server(server, {
    cors: corsOptions,
    transports:['websocket','polling'],
+  
 });
 
 

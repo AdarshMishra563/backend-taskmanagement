@@ -39,7 +39,7 @@ exports.getAllActivityLogs = async (req, res) => {
 exports.createTask = async (req, res) => {
 const { title, description, dueDate,status, priority, assignedTo } = req.body;
 
-  const existingTask = await Task.findOne({ title });
+  const existingTask = await Task.findOne({ title,createdBy: req.user.id });
         
         if (existingTask) {
             return res.status(400).json({ message: "A task with the same title already exists." });

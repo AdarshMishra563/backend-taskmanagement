@@ -37,7 +37,7 @@ exports.getAllActivityLogs = async (req, res) => {
     }
 };
 exports.createTask = async (req, res) => {
-
+const { title, description, dueDate,status, priority, assignedTo } = req.body;
 
   const existingTask = await Task.findOne({ title });
         
@@ -45,7 +45,7 @@ exports.createTask = async (req, res) => {
             return res.status(400).json({ message: "A task with the same title already exists." });
         }
     
-    const { title, description, dueDate,status, priority, assignedTo } = req.body;
+    
     try {
       const task = new Task({ title, description,status, dueDate, priority, assignedTo, createdBy: req.user.id });
       await task.save();
